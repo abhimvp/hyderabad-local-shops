@@ -1,6 +1,13 @@
 // src/pages/merchant/BusinessRegistration.tsx
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
 
 interface FormData {
   businessName: string;
@@ -8,7 +15,7 @@ interface FormData {
   category: string;
   subCategory: string;
   location: {
-    type: 'Point';
+    type: "Point";
     coordinates: [number, number];
   };
   address: {
@@ -25,69 +32,120 @@ interface FormData {
   tags: string[];
 }
 
+interface FormErrors {
+  [key: string]: string;
+}
+
 const BusinessRegistration: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    businessName: '',
-    shortName: '',
-    category: '',
-    subCategory: '',
+    businessName: "",
+    shortName: "",
+    category: "",
+    subCategory: "",
     location: {
-      type: 'Point',
-      coordinates: [0, 0]
+      type: "Point",
+      coordinates: [0, 0],
     },
     address: {
-      street: '',
-      area: '',
-      city: '',
-      pincode: ''
+      street: "",
+      area: "",
+      city: "",
+      pincode: "",
     },
     contact: {
-      phone: '',
-      whatsapp: '',
-      email: ''
+      phone: "",
+      whatsapp: "",
+      email: "",
     },
-    tags: []
+    tags: [],
   });
+  const { user, checkRegistrationStatus } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const validateForm = (data: any): FormErrors => {
+    const errors: FormErrors = {};
+
+    if (!data.businessName?.trim()) {
+      errors.businessName = "Business name is required";
+    }
+
+    if (!data.contact.phone?.match(/^\d{10}$/)) {
+      errors["contact.phone"] = "Valid 10-digit phone number is required";
+    }
+
+    if (
+      data.contact.email &&
+      !data.contact.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+    ) {
+      errors["contact.email"] = "Invalid email format";
+    }
+
+    if (!data.address.pincode?.match(/^\d{6}$/)) {
+      errors["address.pincode"] = "Valid 6-digit pincode is required";
+    }
+
+    return errors;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setErrors({});
     try {
-      // This will be replaced with your actual API endpoint
-      const response = await fetch('/api/business', {
-        method: 'POST',
+      const validationErrors = validateForm(formData);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      const response = await fetch("/api/merchants/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify(formData),
       });
-      if (response.ok) {
-        alert('Business registered successfully!');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
       }
+
+      await checkRegistrationStatus();
+      navigate("/merchant");
     } catch (error) {
-      console.error('Error registering business:', error);
+      console.error("Registration error:", error);
+      setErrors({ submit: error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    const keys = name.split('.');
-    
-    setFormData(prev => {
+    const keys = name.split(".");
+
+    setFormData((prev) => {
       if (keys.length === 1) {
         return { ...prev, [name]: value };
       }
-      
+
       if (keys.length === 2) {
         const [parent, child] = keys;
         return {
           ...prev,
           [parent]: {
             ...prev[parent as keyof FormData],
-            [child]: value
-          }
+            [child]: value,
+          },
         };
       }
-      
+
       return prev;
     });
   };
@@ -98,10 +156,17 @@ const BusinessRegistration: React.FC = () => {
         <CardTitle>Register Your Business</CardTitle>
       </CardHeader>
       <CardContent>
+      {errors.submit && (
+          <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4">
+            {errors.submit}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Business Name</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Business Name
+              </label>
               <input
                 type="text"
                 name="businessName"
@@ -113,7 +178,9 @@ const BusinessRegistration: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Short Name</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Short Name
+              </label>
               <input
                 type="text"
                 name="shortName"
@@ -125,7 +192,9 @@ const BusinessRegistration: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Category
+              </label>
               <input
                 type="text"
                 name="category"
@@ -137,7 +206,9 @@ const BusinessRegistration: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Sub Category</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Sub Category
+              </label>
               <input
                 type="text"
                 name="subCategory"
@@ -153,7 +224,9 @@ const BusinessRegistration: React.FC = () => {
               <h3 className="text-lg font-medium mb-4">Address</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Street</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Street
+                  </label>
                   <input
                     type="text"
                     name="address.street"
@@ -164,7 +237,9 @@ const BusinessRegistration: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Area</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Area
+                  </label>
                   <input
                     type="text"
                     name="address.area"
@@ -176,7 +251,9 @@ const BusinessRegistration: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">City</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      City
+                    </label>
                     <input
                       type="text"
                       name="address.city"
@@ -187,7 +264,9 @@ const BusinessRegistration: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Pincode</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Pincode
+                    </label>
                     <input
                       type="text"
                       name="address.pincode"
@@ -206,7 +285,9 @@ const BusinessRegistration: React.FC = () => {
               <h3 className="text-lg font-medium mb-4">Contact Information</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone
+                  </label>
                   <input
                     type="tel"
                     name="contact.phone"
@@ -217,7 +298,9 @@ const BusinessRegistration: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">WhatsApp (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    WhatsApp (Optional)
+                  </label>
                   <input
                     type="tel"
                     name="contact.whatsapp"
@@ -227,7 +310,9 @@ const BusinessRegistration: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email (Optional)
+                  </label>
                   <input
                     type="email"
                     name="contact.email"
@@ -242,9 +327,11 @@ const BusinessRegistration: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+            disabled={loading}
+            className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 
+              ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            Register Business
+            {loading ? 'Registering...' : 'Register Business'}
           </button>
         </form>
       </CardContent>
