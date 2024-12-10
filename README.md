@@ -13,7 +13,22 @@ Use different package managers (npm/yarn for frontend, pip for backend) without 
 
 # frontend
 
-- `npm init -y` -> created a package.json file
+```
+# Create the project structure
+npm init -y
+npm install react react-dom react-router-dom @heroicons/react tailwindcss postcss autoprefixer
+npm install -D @types/react @types/react-dom typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin
+npm install @headlessui/react @shadcn/ui
+
+# Initialize TypeScript
+npx tsc --init
+
+# Initialize Tailwind CSS
+npx tailwindcss init -p
+
+# Create directory structure
+mkdir -p src/{components,pages}/{customer,merchant,delivery} src/shared src/assets src/layouts src/hooks src/utils src/types src/contexts
+```
 
 # Backend
 
