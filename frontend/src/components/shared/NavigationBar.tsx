@@ -18,6 +18,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ userType }) => {
       { to: '/merchant/inventory', label: 'Inventory' },
       { to: '/merchant/orders', label: 'Orders' },
       { to: '/merchant/settings', label: 'Settings' },
+      { to: '/merchant/profile', label: 'Profile' },
+      { to: '/merchant/register', label: 'Register' }
     ],
     delivery: [
       { to: '/delivery', label: 'Dashboard' },

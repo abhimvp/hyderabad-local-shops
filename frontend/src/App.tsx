@@ -1,10 +1,15 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CustomerLayout from './layouts/CustomerLayout';
-import MerchantLayout from './layouts/MerchantLayout';
 import DeliveryLayout from './layouts/DeliveryLayout';
-import CustomerDashboard from './pages/customer/Dashboard';
+
+import MerchantLayout from './layouts/MerchantLayout';
 import MerchantDashboard from './pages/merchant/Dashboard';
+
+import BusinessRegistration from './pages/merchant/BusinessRegistration';
+import ProductManagement from './pages/merchant/Productmanagement';
+
+import CustomerDashboard from './pages/customer/Dashboard';
 import DeliveryDashboard from './pages/delivery/Dashboard';
 
 const App: React.FC = () => {
@@ -22,8 +27,10 @@ const App: React.FC = () => {
         {/* Merchant Routes */}
         <Route path="/merchant" element={<MerchantLayout />}>
           <Route index element={<MerchantDashboard />} />
-          {/* <Route path="inventory" element={<MerchantInventory />} />
-          <Route path="orders" element={<MerchantOrders />} />
+          <Route path="register" element={<BusinessRegistration />} />
+          <Route path="products" element={<ProductManagement />} />
+          {/* <Route path="inventory" element={<MerchantInventory />} /> */}
+          {/* <Route path="orders" element={<MerchantOrders />} />
           <Route path="settings" element={<MerchantSettings />} /> */}
         </Route>
 
