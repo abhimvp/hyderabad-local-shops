@@ -13,6 +13,7 @@ interface SignupFormData {
 }
 
 const Signup: React.FC = () => {
+  const { signup } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<SignupFormData>({
     name: '',
@@ -80,6 +81,7 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(e);
     
     if (!validateForm()) {
       return;
@@ -88,23 +90,24 @@ const Signup: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone
-        })
-      });
+      // const response = await fetch('/api/auth/signup', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     name: formData.name,
+      //     email: formData.email,
+      //     password: formData.password,
+      //     phone: formData.phone
+      //   })
+      // });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Signup failed');
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.message || 'Signup failed');
+      // }
+      await signup(formData.email, formData.password);
 
       navigate('/login', { 
         state: { 

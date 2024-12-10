@@ -1,3 +1,4 @@
+# backend/app/config/settings.py
 """BaseSettings is specifically designed to handle configuration with environment variables"""
 
 from functools import lru_cache

@@ -1,7 +1,15 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  User,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth } from '../config/firebase';
 
-interface User {
+interface UserInfo {
   id: string;
   businessId?: string;
   email: string;
@@ -9,9 +17,10 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserInfo | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkRegistrationStatus: () => Promise<boolean>;
 }
@@ -19,13 +28,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    checkAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
+  // useEffect(() => {
+  //   // Check for existing session
+  //   checkAuth();
+  // }, []);
 
   const checkAuth = async () => {
     try {
@@ -55,38 +72,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const { token, user: userData } = await response.json();
-      localStorage.setItem('authToken', token);
-      setUser(userData);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Login error:', error);
+      throw error;
+    }
+  };
+  const signup = async (email: string, password: string) => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error('Signup error:', error);
       throw error;
     }
   };
 
   const logout = async () => {
-    localStorage.removeItem('authToken');
-    setUser(null);
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
   };
 
   const checkRegistrationStatus = async () => {
     if (!user) return false;
+    
     try {
-      const response = await fetch(`/api/merchants/${user.id}/status`);
+      // You'll need to implement this API endpoint
+      const response = await fetch(`http://localhost:8000/api/merchants/${user.uid}/status`);
       const { isRegistered } = await response.json();
-      setUser(prev => prev ? { ...prev, isRegistered } : null);
       return isRegistered;
     } catch (error) {
       console.error('Failed to check registration status:', error);
@@ -95,8 +111,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, checkRegistrationStatus }}>
-      {children}
+    <AuthContext.Provider value={{ user, 
+      loading, 
+      login, 
+      signup, 
+      logout,
+      checkRegistrationStatus }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

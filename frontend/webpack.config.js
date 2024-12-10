@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -34,12 +35,26 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js', '.css'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
+    },
+    fallback: {
+      "crypto": require.resolve("crypto-browserify"),
+      "vm": require.resolve("vm-browserify"),
+      "stream": require.resolve("stream-browserify"),
+      "path": require.resolve("path-browserify"),
+      "os": require.resolve("os-browserify/browser"),
+      "buffer": require.resolve("buffer/"),
+      "util": require.resolve("util/"),
+      "assert": require.resolve("assert/"),
     }
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html'
-    })
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer']
+  })
   ],
   devServer: {
     historyApiFallback: true,

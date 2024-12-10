@@ -1,5 +1,5 @@
 // src/pages/merchant/BusinessRegistration.tsx
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -64,6 +64,20 @@ const BusinessRegistration: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
+  // Add this to your React component to test
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/test");
+        const data = await response.json();
+        console.log("Backend connection test:", data);
+      } catch (error) {
+        console.error("Connection test failed:", error);
+      }
+    };
+  
+  testConnection();
+}, []);
   const validateForm = (data: any): FormErrors => {
     const errors: FormErrors = {};
 
@@ -90,22 +104,25 @@ const BusinessRegistration: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // console.log(e)
     e.preventDefault();
     setLoading(true);
     setErrors({});
+    console.log("Submitting form data:", formData);
     try {
-      const validationErrors = validateForm(formData);
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
-      }
+      // const validationErrors = validateForm(formData);
+      // if (Object.keys(validationErrors).length > 0) {
+      //   setErrors(validationErrors);
+      //   return;
+      // }
 
-      const response = await fetch("/api/merchants/register", {
+      const response = await fetch("http://localhost:8000/api/merchants/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -113,6 +130,8 @@ const BusinessRegistration: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Registration failed");
       }
+      const responseData = await response.json();
+      console.log("Registration successful:", responseData); // Add this line
 
       await checkRegistrationStatus();
       navigate("/merchant");
