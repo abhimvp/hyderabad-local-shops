@@ -14,21 +14,39 @@ Use different package managers (npm/yarn for frontend, pip for backend) without 
 # frontend
 
 ```
-# Create the project structure
+# Initial setup
 npm init -y
-npm install react react-dom react-router-dom @heroicons/react tailwindcss postcss autoprefixer
-npm install -D @types/react @types/react-dom typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin
-npm install @headlessui/react @shadcn/ui
 
-# Initialize TypeScript
-npx tsc --init
+# Install necessary dependencies
+npm install react react-dom react-router-dom @heroicons/react @headlessui/react
+npm install @types/react @types/react-dom typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin
+npm install tailwindcss postcss autoprefixer
+npm install @shadcn/ui
+npm install --save-dev webpack webpack-cli webpack-dev-server babel-loader @babel/core @babel/preset-react @babel/preset-typescript css-loader style-loader html-webpack-plugin
+npm install --save-dev postcss-loader postcss css-loader style-loader
+npm install lucide-react
 
-# Initialize Tailwind CSS
-npx tailwindcss init -p
-
-# Create directory structure
+# Create project structure
 mkdir -p src/{components,pages}/{customer,merchant,delivery} src/shared src/assets src/layouts src/hooks src/utils src/types src/contexts
+touch src/index.html src/index.tsx webpack.config.js tsconfig.json
+
+<!-- Create a .babelrc file , Create a postcss.config.js file , Create a tailwind.config.js file  -->
+
+<!-- To run the application: -->
+# Install all dependencies
+npm install
+
+# Start the development server
+npm start
 ```
+
+- This setup provides:
+  - Complete webpack configuration for development and production
+  - TypeScript support with proper configuration
+  - React Router setup with layouts for all three user types
+  - Tailwind CSS integration
+  - Hot module replacement for development
+  - Proper project structure with all necessary components
 
 # Backend
 
